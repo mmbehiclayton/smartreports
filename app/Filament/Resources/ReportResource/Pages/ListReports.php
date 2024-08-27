@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ReportResource\Pages;
 use App\Filament\Resources\ReportResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Components\Tab;
 
 class ListReports extends ListRecords
 {
@@ -14,6 +15,18 @@ class ListReports extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'All' => Tab::make(),
+
+            'Sent Reports' => Tab::make(),
+               
+            'Received Reports' => Tab::make(),
+                
         ];
     }
 }

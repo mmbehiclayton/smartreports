@@ -2,23 +2,28 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ReportResource\Pages;
-use App\Models\Report;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Report;
 use Filament\Tables\Table;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\TagsColumn;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\FileEntry; 
+use App\Filament\Resources\ReportResource\Pages;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
+
+
+
 
 class ReportResource extends Resource
 {
@@ -32,70 +37,109 @@ class ReportResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $currentUserId = Auth::id();
         return $form
             ->schema([
-                Select::make('category')
-                    ->required()
-                    ->label('Category')
-                    ->options([
-                        'General Reports' => 'General Reports',
-                        'Academic Reports' => 'Academic Reports',
-                        'Admin Reports' => 'Admin Reports',
-                    ])
-                    ->placeholder('Select a Category'),
+                Forms\Components\Section::make('Report Details')
+                    ->schema([
+                        Select::make('category')
+                            ->required()
+                            ->label('Category')
+                            ->options([
+                                'General Reports' => 'General Reports',
+                                'Academic Reports' => 'Academic Reports',
+                                'Admin Reports' => 'Admin Reports',
+                            ])
+                            ->placeholder('Select a Category'),
+                            
 
-                TextInput::make('subject')
-                    ->required()
-                    ->label('Subject'),
+                        TextInput::make('subject')
+                            ->required()
+                            ->label('Subject'),
+                    ])->columns(2),
+                
+                Forms\Components\Section::make('Report Summary')
+                    ->schema([
+                        Textarea::make('summary')
+                            ->required()
+                            ->label('Write Your Report Summary'),
+                    ])->columns(1),
 
-                Textarea::make('summary')
-                    ->required()
-                    ->label('Summary'),
+                Forms\Components\Section::make('Report Recipients & Attachments')
+                    ->schema([          
 
-                MultiSelect::make('recipients')
-                    ->relationship('recipients', 'name')
-                    ->label('Recipients'),
+                        Select::make('recipients')
+                            ->relationship('recipients', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->label('Recipients')
+                            ->options(function () use ($currentUserId) {
+                                return \App\Models\User::excludeCurrentUser($currentUserId)
+                                    ->pluck('name', 'id'); 
+                            }),
 
-                FileUpload::make('attachments')
-                    ->multiple()
-                    ->label('Attachments')
-                    ->disk('public')
-                    ->directory('attachments'),
+                        FileUpload::make('attachments')
+                            ->multiple()
+                            ->label('Attachments')
+                            ->disk('public')
+                            ->directory('attachments'),
+                    ])->columns(2),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                TextColumn::make('category')
-                    ->sortable()
-                    ->searchable()
-                    ->label('Category'),
+        ->columns([
+            TextColumn::make('category')
+                ->sortable()
+                ->searchable()
+                ->label('Category'),
+        
+            TextColumn::make('subject')
+                ->sortable()
+                ->searchable()
+                ->label('Subject'),
+        
+            TextColumn::make('user.name')
+                ->label('Sender')
+                ->sortable()
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        
+            TextColumn::make('recipients.name')
+                ->label('Recipients')
+                ->toggleable(isToggledHiddenByDefault: true),
+        
+            TextColumn::make('created_at')
+                ->label('Created Date')
+                ->sortable()
+                ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y'))
+                ->toggleable(isToggledHiddenByDefault: true),
+        
+            TextColumn::make('updated_at')
+                ->label('Updated Date')
+                ->sortable()
+                ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y'))
+                ->toggleable(isToggledHiddenByDefault: true),
+        
+            TextColumn::make('attachments')
+                ->label('Attachments')
+                ->formatStateUsing(function ($state) {
+                    try {
+                        return collect(json_decode($state, true))->map(function ($file) {
+                            $url = Storage::disk('public')->url("attachments/{$file}");
+                            return '<a href="' . $url . '" class="text-blue-500 hover:underline" download>' . basename($file) . '</a>';
+                        })->implode(', ');
+                    } catch (\Exception $e) {
+                        return 'Error generating URL: ' . $e->getMessage();
+                    }
+                })
+                ->html()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
+        
 
-                TextColumn::make('subject')
-                    ->sortable()
-                    ->searchable()
-                    ->label('Subject'),
-
-                TextColumn::make('user.name')
-                    ->label('Sender')
-                    ->sortable()
-                    ->searchable(),
-
-                TagsColumn::make('recipients.name')
-                    ->label('Recipients'),
-
-                TextColumn::make('created_at') // Add Created Date column
-                    ->label('Created Date')
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y')), // Gmail-like format
-
-                TextColumn::make('updated_at') // Add Updated Date column
-                    ->label('Updated Date')
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y')), // Gmail-like format
-            ])
 
 
             ->filters([
@@ -128,9 +172,26 @@ class ReportResource extends Resource
                 TextEntry::make('subject')->label('Report Subject'),
                 TextEntry::make('summary')->label('Report Summary'),
                 TextEntry::make('user.name')->label('Report Sender'),
-                TextEntry::make('recipients.name')->label('Report Recipent')
+                TextEntry::make('recipients.name')->label('Report Recipient'),
+
+                // Displaying attached files with download links
+                TextEntry::make('attachments')
+                    ->label('Attachments')
+                    ->formatStateUsing(function ($state) {
+                        $output = '';
+                        if (is_array($state)) {
+                            foreach ($state as $file) {
+                                $url = Storage::url($file);
+                                $output .= "<a href='{$url}' target='_blank' class='text-blue-500 hover:underline'>".basename($file)."</a><br>";
+                            }
+                        }
+                        return $output;
+                    })
+                    ->html(), // Allow HTML for links
             ]);
     }
+
+
 
     public static function getRelations(): array
     {

@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Report extends Model
 {
     protected $fillable = [
-        'user_id', 'category', 'subject', 'summary',
+        'user_id', 
+        'category', 
+        'subject', 
+        'summary',
     ];
 
     // Relationships
@@ -18,9 +21,9 @@ class Report extends Model
     /**
      * The user who created the report.
      */
-    public function user(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

@@ -13,6 +13,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use App\Helpers\Utils;
 
+
 class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable, HasRoles, HasPanelShield;
@@ -117,5 +118,11 @@ class User extends Authenticatable implements FilamentUser
         }
             
     }
+
+    public function scopeExcludeCurrentUser($query, $currentUserId)
+    {
+        return $query->where('id', '!=', $currentUserId);
+    }
+
 
 }

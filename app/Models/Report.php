@@ -14,6 +14,7 @@ class Report extends Model
         'category', 
         'subject', 
         'summary',
+        'file_paths',
     ];
 
     // Relationships
@@ -50,4 +51,25 @@ class Report extends Model
     {
         return $this->hasMany(Attachment::class);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($report) {
+            if (request()->hasFile('attachments')) {
+                $filePaths = [];
+                foreach (request()->file('attachments') as $file) {
+                    $path = $file->store('attachments', 'public');
+                    $filePaths[] = $path;
+                }
+                $report->update([
+                    'file_paths' => $filePaths,
+                ]);
+            }
+        });
+    }
+
+
+    
 }

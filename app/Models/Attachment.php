@@ -12,11 +12,18 @@ class Attachment extends Model
         'file_path',
     ];
 
+
+    protected $casts = [
+        'file_path' => 'array', // Automatically cast the file_paths column to an array
+    ];
+
     // Relationships
 
     /**
      * The report this attachment belongs to.
      */
+    
+
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);

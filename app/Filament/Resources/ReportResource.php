@@ -16,14 +16,11 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\FileEntry; 
 use App\Filament\Resources\ReportResource\Pages;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-
-
-
-
+use Illuminate\Support\HtmlString;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ReportResource extends Resource
 {
@@ -78,18 +75,26 @@ class ReportResource extends Resource
                                     ->pluck('name', 'id'); 
                             }),
 
-                        FileUpload::make('attachments')
+                        Forms\Components\FileUpload::make('attachments')
+                            ->preserveFilenames()
+                            ->directory('attachments')
+                            ->getUploadedFileNameForStorageUsing(function(TemporaryUploadedFile $file): string{
+                                return (string) str($file->getClientOriginalName())->prepend(now()->timestamp);
+                            })
                             ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->openable()
+                            ->downloadable()
                             ->label('Attachments')
-                            ->disk('public')
-                            ->directory('attachments'),
+                            ->disk('public')                            
                     ])->columns(2),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table        
         ->columns([
             TextColumn::make('category')
                 ->sortable()
@@ -123,21 +128,11 @@ class ReportResource extends Resource
                 ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y'))
                 ->toggleable(isToggledHiddenByDefault: true),
         
-            TextColumn::make('attachments')
-                ->label('Attachments')
-                ->formatStateUsing(function ($state) {
-                    try {
-                        return collect(json_decode($state, true))->map(function ($file) {
-                            $url = Storage::disk('public')->url("attachments/{$file}");
-                            return '<a href="' . $url . '" class="text-blue-500 hover:underline" download>' . basename($file) . '</a>';
-                        })->implode(', ');
-                    } catch (\Exception $e) {
-                        return 'Error generating URL: ' . $e->getMessage();
-                    }
-                })
-                ->html()
-                ->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('file_paths')
+                ->formatStateUsing(fn (Report $record) => implode(', ', $record->file_paths))
+                ->label('Attachments'),
         ])
+        
         
 
 
@@ -162,6 +157,8 @@ class ReportResource extends Resource
                 ]),
             ]);
     }
+
+    
     
  
     public static function infolist(Infolist $infolist): Infolist

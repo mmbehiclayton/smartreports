@@ -26,18 +26,26 @@ class ItemRequestResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('department_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('year_session_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('term_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('week_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('department_id')
+                    ->relationship(name: 'department', titleAttribute: 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Forms\Components\Select::make('year_session_id')
+                    ->relationship(name: 'year_session', titleAttribute: 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Forms\Components\Select::make('term_id')
+                    ->relationship(name: 'term', titleAttribute: 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Forms\Components\Select::make('week_id')
+                    ->relationship(name: 'week', titleAttribute: 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Forms\Components\TextInput::make('item_name')
                     ->required()
                     ->maxLength(255),
@@ -57,16 +65,16 @@ class ItemRequestResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('department_id')
+                Tables\Columns\TextColumn::make('department.name')
+                    ->label('Branch Name')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('year_session.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('year_session_id')
+                Tables\Columns\TextColumn::make('term.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('term_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('week_id')
+                Tables\Columns\TextColumn::make('week.name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('item_name')

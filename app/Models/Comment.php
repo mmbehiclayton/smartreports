@@ -13,6 +13,10 @@ class Comment extends Model
         'comment_text',
     ];
 
+    protected $casts = [
+        'is_visible' => 'boolean',
+    ];
+
     // Relationships
 
     /**

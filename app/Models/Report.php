@@ -17,6 +17,10 @@ class Report extends Model
         'file_paths',
     ];
 
+    protected $casts = [
+        'file_paths' => 'array', // Cast the 'files' attribute to an array
+    ];
+
     // Relationships
 
     /**

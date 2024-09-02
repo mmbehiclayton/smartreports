@@ -35,6 +35,11 @@ class ReportResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {

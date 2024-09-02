@@ -23,6 +23,11 @@ class WeekResource extends Resource
 
     protected static ?string $slug= 'term-weeks';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
     protected static ?int $navigationSort= 3;
 
     public static function form(Form $form): Form

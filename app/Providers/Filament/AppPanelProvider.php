@@ -25,6 +25,8 @@ class AppPanelProvider extends PanelProvider
         return $panel
             ->id('app')
             ->path('app')
+            ->login()
+            ->registration()
             ->colors([
                 'danger' => Color::Red,
                 'gray' => Color::Slate,

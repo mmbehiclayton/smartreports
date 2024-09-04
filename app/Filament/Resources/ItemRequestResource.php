@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
 
 class ItemRequestResource extends Resource
 {
@@ -29,6 +31,7 @@ class ItemRequestResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $currentUserId = Auth::id();
         return $form
             ->schema([
                 Forms\Components\Select::make('department_id')
@@ -62,7 +65,20 @@ class ItemRequestResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('remarks')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255),   
+                Forms\Components\Hidden::make('user_id')
+                    ->default($currentUserId),           
+
+                Select::make('recipients')
+                    ->relationship('recipients', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->label('Recipients')
+                    ->options(function () use ($currentUserId) {
+                        return \App\Models\User::excludeCurrentUser($currentUserId)
+                            ->pluck('name', 'id'); 
+                    }),
+                            
             ]);
     }
 
@@ -71,14 +87,17 @@ class ItemRequestResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('department.name')
-                    ->label('Branch Name')
-                    ->sortable(),
+                    ->label('Department Name')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('year_session.name')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('term.name')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('week.name')
                     ->numeric()
                     ->sortable(),
@@ -90,7 +109,20 @@ class ItemRequestResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('remarks')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                
+                // Sender Column
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Sender')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                // Recipients Column
+                Tables\Columns\TextColumn::make('recipients.name') 
+                    ->label('Recipients'),
+                    // ->formatStateUsing(fn ($state) => $state->pluck('name')->implode(', ')),
+                
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -112,6 +144,7 @@ class ItemRequestResource extends Resource
                 ]),
             ]);
     }
+
 
     public static function getRelations(): array
     {

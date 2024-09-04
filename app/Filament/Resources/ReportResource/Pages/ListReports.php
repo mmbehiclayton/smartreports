@@ -36,4 +36,17 @@ class ListReports extends ListRecords
                 ->query(fn (Builder $query) => $query->whereHas('recipients', fn (Builder $query) => $query->where('user_id', Auth::id())))
         ];
     }
+
+    protected function getActions(): array
+    {
+        $actions = parent::getHeaderActions();
+
+        // Check the current tab and modify actions accordingly
+        if ($this->getCurrentTab() === 'Received Reports') {
+            // Remove the Edit action or disable it
+            return array_filter($actions, fn ($action) => !($action instanceof Actions\EditAction));
+        }
+
+        return $actions;
+    }
 }

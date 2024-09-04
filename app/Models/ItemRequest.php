@@ -19,6 +19,7 @@ class ItemRequest extends Model
         'description',
         'estimate_cost',
         'remarks',
+        'user_id',
     ];
 
     public function department(): BelongsTo
@@ -39,5 +40,16 @@ class ItemRequest extends Model
     public function week(): BelongsTo
     {
         return $this->belongsTo(Week::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+
+    public function recipients()
+    {
+        return $this->belongsToMany(User::class, 'request_user', 'item_request_id', 'user_id');
     }
 }

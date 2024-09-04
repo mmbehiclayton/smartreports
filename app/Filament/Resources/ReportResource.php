@@ -144,8 +144,21 @@ class ReportResource extends Resource
                 ->toggleable(isToggledHiddenByDefault: true),
         
             TextColumn::make('file_paths')
-                ->formatStateUsing(fn (Report $record) => implode(', ', $record->file_paths))
-                ->label('Attachments'),
+                ->formatStateUsing(function (Report $record) {
+                    return collect($record->file_paths)->map(function ($path) {
+                        $filename = basename($path);
+                        // Remove the random numbers before the filename using regex
+                        $cleanFilename = preg_replace('/^\d+/', '', $filename);
+                        $cleanFilename = ltrim($cleanFilename, '_ '); // Remove any leading underscores or spaces
+                        $url = asset('storage/attachments/' . $filename);
+                        return "<a href=\"{$url}\" target=\"_blank\" class=\" bg-blue-500 rounded px-2 py-1 mb-1 mr-1 text-sm hover:underline\">{$cleanFilename}</a>";
+                    })->implode(''); // Join badges without additional separators
+                })
+                ->label('Attachments')
+                ->html(),
+            
+            
+            
         ])
         
         
@@ -176,32 +189,7 @@ class ReportResource extends Resource
     
     
  
-    // public static function infolist(Infolist $infolist): Infolist
-    // {
-    //     return $infolist
-    //         ->schema([
-    //             TextEntry::make('category')->label('Report Category'),
-    //             TextEntry::make('subject')->label('Report Subject'),
-    //             TextEntry::make('summary')->label('Report Summary'),
-    //             TextEntry::make('user.name')->label('Report Sender'),
-    //             TextEntry::make('recipients.name')->label('Report Recipient'),
-
-    //             // Displaying attached files with download links
-    //             TextEntry::make('attachments')
-    //                 ->label('Attachments')
-    //                 ->formatStateUsing(function ($state) {
-    //                     $output = '';
-    //                     if (is_array($state)) {
-    //                         foreach ($state as $file) {
-    //                             $url = Storage::url($file);
-    //                             $output .= "<a href='{$url}' target='_blank' class='text-blue-500 hover:underline'>".basename($file)."</a><br>";
-    //                         }
-    //                     }
-    //                     return $output;
-    //                 })
-    //                 ->html(), // Allow HTML for links
-    //         ]);
-    // }
+    
 
     public static function infolist(Infolist $infolist): Infolist
     {
@@ -209,28 +197,23 @@ class ReportResource extends Resource
             ->schema([
                 Components\Section::make()
                     ->schema([
-                        Components\Split::make([
-                            Components\Grid::make(2)
-                                ->schema([
-                                    Components\Group::make([
-                                        Components\TextEntry::make('category'),
-                                        Components\TextEntry::make('subject'),
-                                        Components\TextEntry::make('created_at')
-                                            ->badge()
-                                            ->date()
-                                            ->color('success'),
-                                    ]),
-                                    Components\Group::make([
-                                        Components\TextEntry::make('user.name')
-                                            ->label('Report Sender'),
-                                        Components\TextEntry::make('recipients.name')
-                                        ->label('Report Recipients'),                                            
-                                    ]),
+                        Components\Grid::make(2) // Adjust the layout here
+                            ->schema([
+                                Components\Group::make([
+                                    Components\TextEntry::make('category'),
+                                    Components\TextEntry::make('subject'),
+                                    Components\TextEntry::make('created_at')
+                                        ->badge()
+                                        ->date()
+                                        ->color('success'),
                                 ]),
-                            Components\ImageEntry::make('attachments')
-                                ->hiddenLabel()
-                                ->grow(false),
-                        ])->from('lg'),
+                                Components\Group::make([
+                                    Components\TextEntry::make('user.name')
+                                        ->label('Report Sender'),
+                                    Components\TextEntry::make('recipients.name')
+                                        ->label('Report Recipients'),
+                                ]),
+                            ]),
                     ]),
                 Components\Section::make('Report Summary Content')
                     ->schema([
@@ -240,8 +223,28 @@ class ReportResource extends Resource
                             ->hiddenLabel(),
                     ])
                     ->collapsible(),
+
+                
+                Components\Section::make('Attachments')
+                    ->schema([
+                        Components\TextEntry::make('file_paths')
+                            ->label('Attachments')
+                            ->formatStateUsing(function (Report $record) {
+                                return collect($record->file_paths)->map(function ($path) {
+                                    $filename = basename($path);
+                                    $cleanFilename = preg_replace('/^\d+/', '', $filename);
+                                    $cleanFilename = ltrim($cleanFilename, '_ '); 
+                                    $url = asset('storage/attachments/' . $filename);
+                                    return "<a href=\"{$url}\" target=\"_blank\" class=\"bg-blue-500 rounded px-2 py-1 inline-block mb-1\">{$cleanFilename}</a>";
+                                })->implode('<br>'); 
+                            })
+                            ->html(),  
+                    ])
+                    ->collapsible(), 
             ]);
     }
+
+
 
     public static function getRecordSubNavigation(Page $page): array
     {

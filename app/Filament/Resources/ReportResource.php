@@ -28,7 +28,7 @@ class ReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
-    protected static ?string $navigationGroup= 'Admin Reports';
+    protected static ?string $navigationGroup= 'Admins Area';
 
     protected static ?string $slug= 'organization-reports';
 

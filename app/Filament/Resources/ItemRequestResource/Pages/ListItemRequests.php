@@ -26,15 +26,18 @@ class ListItemRequests extends ListRecords
 
         return [
             null => Tab::make('All Requests')
+                        ->icon('heroicon-m-inbox-stack')
                 ->query(fn (Builder $query) => $query
                     ->where('user_id', $currentUserId)
                     ->orWhereHas('recipients', fn (Builder $query) => $query->where('user_id', $currentUserId))
                 ),
 
             'Sent Requests' => Tab::make('Sent Requests')
+                                    ->icon('heroicon-m-paper-airplane')
                 ->query(fn (Builder $query) => $query->where('user_id', $currentUserId)),
 
             'Received Requests' => Tab::make('Received Requests')
+                                        ->icon('heroicon-m-inbox-arrow-down')
                 ->query(fn (Builder $query) => $query->whereHas('recipients', fn (Builder $query) => $query->where('user_id', $currentUserId)))
         ];
     }

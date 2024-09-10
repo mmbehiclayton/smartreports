@@ -23,8 +23,5 @@ class AppServiceProvider extends ServiceProvider
         Report::observe(ReportObserver::class);
     }
 
-    public function registerRoutes(): void
-    {
-        Route::get('/admin', [HomeController::class, 'index'])->name('admin.dashboard');
-    }
+    
 }

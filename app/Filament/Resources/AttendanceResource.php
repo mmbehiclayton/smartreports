@@ -19,7 +19,7 @@ class AttendanceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup= 'Academic Management';
+    protected static ?string $navigationGroup= 'Admins Area';
 
     public static function getNavigationBadge(): ?string
     {

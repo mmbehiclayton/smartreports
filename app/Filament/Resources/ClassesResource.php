@@ -21,10 +21,10 @@ class ClassesResource extends Resource
 
     protected static ?string $navigationGroup= 'System Settings';
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    // public static function getNavigationBadge(): ?string
+    // {
+    //     return static::getModel()::count();
+    // }
 
     public static function form(Form $form): Form
     {

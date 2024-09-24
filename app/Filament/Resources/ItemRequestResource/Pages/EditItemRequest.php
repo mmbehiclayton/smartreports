@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditItemRequest extends EditRecord
 {
+
+    use  \EightyNine\Approvals\Traits\HasApprovalHeaderActions;
     protected static string $resource = ItemRequestResource::class;
 
     protected function getHeaderActions(): array

@@ -23,10 +23,10 @@ class ItemRequestResource extends Resource
 
     protected static ?string $navigationGroup= 'Admins Area';
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    // public static function getNavigationBadge(): ?string
+    // {
+    //     return static::getModel()::count();
+    // }
 
 
     public static function form(Form $form): Form
@@ -135,7 +135,12 @@ class ItemRequestResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->actions(
+                ...\EightyNine\Approvals\Tables\Actions\ApprovalActions::make(
+                    // define your action here that will appear once approval is completed
+                    Action::make("Done"),
+                
+                [
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

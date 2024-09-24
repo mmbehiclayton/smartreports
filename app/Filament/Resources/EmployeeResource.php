@@ -23,10 +23,10 @@ class EmployeeResource extends Resource
 
     protected static ?string $slug= 'organization-employees';
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    // public static function getNavigationBadge(): ?string
+    // {
+    //     return static::getModel()::count();
+    // }
 
     public static function form(Form $form): Form
     {

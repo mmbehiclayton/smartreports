@@ -28,7 +28,7 @@ class ReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
-    protected static ?string $navigationGroup= 'Admins Area';
+    protected static ?string $navigationGroup= 'Admin Reports';
 
     protected static ?string $slug= 'organization-reports';
 
@@ -121,11 +121,11 @@ class ReportResource extends Resource
                 ->label('Sender')
                 ->sortable()
                 ->searchable()
-                ->toggleable(isToggledHiddenByDefault: true),
+                ->toggleable(isToggledHiddenByDefault: false),
         
             TextColumn::make('recipients.name')
                 ->label('Recipients')
-                ->toggleable(isToggledHiddenByDefault: true),
+                ->toggleable(isToggledHiddenByDefault: false),
         
             TextColumn::make('created_at')
                 ->label('Created Date')
@@ -133,7 +133,7 @@ class ReportResource extends Resource
                 ->color('success')
                 ->badge()
                 ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y'))
-                ->toggleable(isToggledHiddenByDefault: true),
+                ->toggleable(isToggledHiddenByDefault: false),
         
             TextColumn::make('updated_at')
                 ->label('Updated Date')

@@ -19,14 +19,14 @@ class DepartmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
     
-    protected static ?string $navigationGroup= 'Admins Area';
+    protected static ?string $navigationGroup= 'Human Resource';
 
     protected static ?string $slug= 'organization-departments';
 
-    // public static function getNavigationBadge(): ?string
-    // {
-    //     return static::getModel()::count();
-    // }
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {

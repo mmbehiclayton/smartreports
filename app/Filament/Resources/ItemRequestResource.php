@@ -21,7 +21,7 @@ class ItemRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup= 'Admins Area';
+    protected static ?string $navigationGroup= 'Admin Reports';
 
     // public static function getNavigationBadge(): ?string
     // {
@@ -135,12 +135,7 @@ class ItemRequestResource extends Resource
             ->filters([
                 //
             ])
-            ->actions(
-                ...\EightyNine\Approvals\Tables\Actions\ApprovalActions::make(
-                    // define your action here that will appear once approval is completed
-                    Action::make("Done"),
-                
-                [
+            ->actions([
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

@@ -9,4 +9,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateWeek extends CreateRecord
 {
     protected static string $resource = WeekResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+
+    return $this->getResource()::getUrl('index');
+
+    }
 }

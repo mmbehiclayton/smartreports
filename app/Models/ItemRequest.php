@@ -10,16 +10,19 @@ class ItemRequest extends Model
 {
     use HasFactory;
 
-    protected $fillable =[
+    protected $fillable = [
         'department_id',
         'year_session_id',
         'term_id',
         'week_id',
-        'item_name',
+        'items', // Store multiple items as JSON
         'description',
-        'estimate_cost',
         'remarks',
         'user_id',
+    ];
+
+    protected $casts = [
+        'items' => 'array',
     ];
 
     public function department(): BelongsTo

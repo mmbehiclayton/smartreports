@@ -14,6 +14,8 @@ class Week extends Model
     protected $fillable = [
         'term_id',
         'name',
+        'start_date',
+        'end_date',
 
     ];
 
@@ -25,6 +27,11 @@ class Week extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class);
     }
 
 }

@@ -35,7 +35,10 @@ class TermResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('year_session_id')
-                    ->relationship(name: 'year_session', titleAttribute: 'name')
+                    ->relationship(
+                        name: 'year_session',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn ($query) => $query->latest()->take(1)->orderBy('id', 'asc')) // Sort by ID asc
                     ->searchable()
                     ->preload()
                     ->required(),

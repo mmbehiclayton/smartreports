@@ -4,8 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WeekResource\Pages;
 use App\Filament\Resources\WeekResource\RelationManagers;
+use App\Models\Term;
 use App\Models\Week;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -34,14 +38,22 @@ class WeekResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('term_id')
-                    ->relationship(name: 'term', titleAttribute: 'name')
+                Select::make('term_id')
+                    ->label('Term')
+                    ->options(
+                        Term::latest()->take(3)->orderBy('id', 'desc')->pluck('name', 'id')
+                    ) // Get last 3 terms sorted by ID ascending
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\TextInput::make('name')
+
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+
+                DatePicker::make('start_date')->required(),
+
+                DatePicker::make('end_date'),
             ]);
     }
 

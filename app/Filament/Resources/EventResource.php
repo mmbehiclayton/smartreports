@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EventResource\Pages;
 use App\Models\Event;
+use App\Models\Term;
+use App\Models\Week;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -43,8 +45,8 @@ class EventResource extends Resource
                 Section::make('Event Scheduling')
                     ->description('Set event dates and status')
                     ->schema([
-                        DatePicker::make('start_date')->required(),
-                        DatePicker::make('end_date'),
+                        DatePicker::make('event_date')->required(),
+
                         Select::make('status')
                             ->options([
                                 'Pending' => 'Pending',
@@ -61,24 +63,29 @@ class EventResource extends Resource
                     ->description('Assign responsible person, term, and branch')
                     ->schema([
                         TextInput::make('in_charge')->label('Responsible Person')->required(),
-                        Select::make('term')
-                            ->label('Term')
-                            ->options([
-                                'Term 1' => 'Term 1',
-                                'Term 2' => 'Term 2',
-                                'Term 3' => 'Term 3',
-                            ])
-                            ->required(),
-                        TextInput::make('event_week')
+
+                        Select::make('term_id')
+                        ->label('Term')
+                        ->options(Term::latest()->take(3)->pluck('name', 'id'))
+                        ->searchable()
+                        ->live()
+                        ->required(),
+
+                        // Week Selection - Filters Weeks Based on Selected Term
+                        Select::make('event_week')
                             ->label('Event Week')
-                            ->numeric()
-                            ->step(1)
-                            ->minValue(1)
-                            ->maxValue(15)
+                            ->options(fn (callable $get) =>
+                                $get('term_id')
+                                    ? Week::where('term_id', $get('term_id'))->pluck('name', 'id')
+                                    : []
+                            )
+                            ->reactive()
                             ->required(),
+
                         Select::make('branch')
                             ->label('Branch')
                             ->options([
+                                'All Branches' => 'All Branches',
                                 'South C' => 'South C',
                                 'Kitisuru' => 'Kitisuru',
                                 'Juja Rd' => 'Juja Rd',
@@ -102,18 +109,16 @@ class EventResource extends Resource
     {
         return $table
             ->headerActions([
-                Action::make('Generate PDF')
+                Action::make('Pdf Calendar')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn () => route('events.pdf'))
                     ->openUrlInNewTab(),
             ])
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('start_date')->sortable(),
                 TextColumn::make('in_charge')->label('In-Charge'),
-                TextColumn::make('event_week')->label('Week')->sortable(),
-
-                TextColumn::make('term')
+                TextColumn::make('week.name')->label('Week')->sortable(),
+                TextColumn::make('term.name')
                     ->label('Term')
                     ->badge()
                     ->colors([
@@ -121,9 +126,7 @@ class EventResource extends Resource
                         'success' => 'Term 2',
                         'warning' => 'Term 3',
                     ]),
-
                 TextColumn::make('branch')->label('Branch')->sortable(),
-
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
@@ -139,9 +142,7 @@ class EventResource extends Resource
                         'Postponed' => 'heroicon-o-x-circle',
                         default => null
                     }),
-
                 BooleanColumn::make('is_active')->label('Active'),
-
                 BadgeColumn::make('classes.name')->label('Assigned Classes'),
             ])
             ->filters([
@@ -153,7 +154,6 @@ class EventResource extends Resource
                         'Postponed' => 'Postponed',
                     ])
                     ->placeholder('Filter by Status'),
-
                 SelectFilter::make('branch')
                     ->options([
                         'South C' => 'South C',
@@ -161,13 +161,8 @@ class EventResource extends Resource
                         'Juja Rd' => 'Juja Rd',
                     ])
                     ->placeholder('Filter by Branch'),
-
-                SelectFilter::make('term')
-                    ->options([
-                        'Term 1' => 'Term 1',
-                        'Term 2' => 'Term 2',
-                        'Term 3' => 'Term 3',
-                    ])
+                SelectFilter::make('term_id')
+                    ->options(\App\Models\Term::orderBy('created_at', 'desc')->take(3)->pluck('name', 'id')->toArray()) // Fetch last 3 inserted terms
                     ->placeholder('Filter by Term'),
 
                 SelectFilter::make('classes.name')
@@ -188,7 +183,6 @@ class EventResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('start_date', 'asc')
             ->filtersLayout(Tables\Enums\FiltersLayout::AboveContent);
     }
 

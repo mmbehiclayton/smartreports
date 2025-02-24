@@ -28,14 +28,14 @@ class ReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
-    protected static ?string $navigationGroup= 'Admin Reports';
+    //protected static ?string $navigationGroup= 'Admin Reports';
 
     protected static ?string $slug= 'organization-reports';
 
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    
+
     // public static function getNavigationBadge(): ?string
     // {
     //     return static::getModel()::count();
@@ -57,13 +57,13 @@ class ReportResource extends Resource
                                 'Admin Reports' => 'Admin Reports',
                             ])
                             ->placeholder('Select a Category'),
-                            
+
 
                         TextInput::make('subject')
                             ->required()
                             ->label('Subject'),
                     ])->columns(2),
-                
+
                 Forms\Components\Section::make('Report Summary')
                     ->schema([
                         Forms\Components\MarkdownEditor::make('summary')
@@ -72,7 +72,7 @@ class ReportResource extends Resource
                     ])->columns(1),
 
                 Forms\Components\Section::make('Report Recipients & Attachments')
-                    ->schema([          
+                    ->schema([
 
                         Select::make('recipients')
                             ->relationship('recipients', 'name')
@@ -81,7 +81,7 @@ class ReportResource extends Resource
                             ->label('Recipients')
                             ->options(function () use ($currentUserId) {
                                 return \App\Models\User::excludeCurrentUser($currentUserId)
-                                    ->pluck('name', 'id'); 
+                                    ->pluck('name', 'id');
                             }),
 
                         Forms\Components\FileUpload::make('file_paths')
@@ -97,36 +97,36 @@ class ReportResource extends Resource
                             ->openable()
                             ->downloadable()
                             ->label('Attachments')
-                            ->disk('public') 
-                            ->uploadingMessage('Uploading attachment...')                           
+                            ->disk('public')
+                            ->uploadingMessage('Uploading attachment...')
                     ])->columns(2),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table        
+        return $table
         ->columns([
             TextColumn::make('category')
                 ->sortable()
                 ->searchable()
                 ->label('Category'),
-        
+
             TextColumn::make('subject')
                 ->sortable()
                 ->searchable()
                 ->label('Subject'),
-        
+
             TextColumn::make('user.name')
                 ->label('Sender')
                 ->sortable()
                 ->searchable()
                 ->toggleable(isToggledHiddenByDefault: false),
-        
+
             TextColumn::make('recipients.name')
                 ->label('Recipients')
                 ->toggleable(isToggledHiddenByDefault: false),
-        
+
             TextColumn::make('created_at')
                 ->label('Created Date')
                 ->sortable()
@@ -134,7 +134,7 @@ class ReportResource extends Resource
                 ->badge()
                 ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y'))
                 ->toggleable(isToggledHiddenByDefault: false),
-        
+
             TextColumn::make('updated_at')
                 ->label('Updated Date')
                 ->sortable()
@@ -142,7 +142,7 @@ class ReportResource extends Resource
                 ->badge()
                 ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('M d, Y'))
                 ->toggleable(isToggledHiddenByDefault: true),
-        
+
             TextColumn::make('file_paths')
                 ->formatStateUsing(function (Report $record) {
                     return collect($record->file_paths)->map(function ($path) {
@@ -156,12 +156,12 @@ class ReportResource extends Resource
                 })
                 ->label('Attachments')
                 ->html(),
-            
-            
-            
+
+
+
         ])
-        
-        
+
+
 
 
 
@@ -186,10 +186,10 @@ class ReportResource extends Resource
             ]);
     }
 
-    
-    
- 
-    
+
+
+
+
 
     public static function infolist(Infolist $infolist): Infolist
     {
@@ -224,7 +224,7 @@ class ReportResource extends Resource
                     ])
                     ->collapsible(),
 
-                
+
                 Components\Section::make('Attachments')
                     ->schema([
                         Components\TextEntry::make('file_paths')
@@ -233,14 +233,14 @@ class ReportResource extends Resource
                                 return collect($record->file_paths)->map(function ($path) {
                                     $filename = basename($path);
                                     $cleanFilename = preg_replace('/^\d+/', '', $filename);
-                                    $cleanFilename = ltrim($cleanFilename, '_ '); 
+                                    $cleanFilename = ltrim($cleanFilename, '_ ');
                                     $url = asset('storage/attachments/' . $filename);
                                     return "<a href=\"{$url}\" target=\"_blank\" class=\"bg-blue-500 rounded px-2 py-1 inline-block mb-1\">{$cleanFilename}</a>";
-                                })->implode('<br>'); 
+                                })->implode('<br>');
                             })
-                            ->html(),  
+                            ->html(),
                     ])
-                    ->collapsible(), 
+                    ->collapsible(),
             ]);
     }
 
@@ -275,5 +275,5 @@ class ReportResource extends Resource
         ];
     }
 
-    
+
 }

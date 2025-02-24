@@ -11,6 +11,13 @@ class CreateReport extends CreateRecord
 {
     protected static string $resource = ReportResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+
+    return $this->getResource()::getUrl('index');
+
+    }
+
     protected function getCreatedNotification(): ?Notification {
         return Notification::make()
             ->success()

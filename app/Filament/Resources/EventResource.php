@@ -188,10 +188,10 @@ class EventResource extends Resource
                     ->icon('heroicon-m-arrow-down-tray')
                     ->openUrlInNewTab()
                     ->deselectRecordsAfterCompletion()
-                    ->action(function (Collection $records) {
-                        return response()->streamDownload(function () use ($records) {
+                    ->action(function (Collection $events) {
+                        return response()->streamDownload(function () use ($events) {
                             echo Pdf::loadHTML(
-                                Blade::render('pdf', ['records' => $records])
+                                Blade::render('pdf', ['events' => $events])
                             )->stream();
                         }, 'calendar.pdf');
                     }),

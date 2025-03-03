@@ -23,6 +23,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Blade;
 
 class EventResource extends Resource
 {
@@ -181,6 +184,17 @@ class EventResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('Export')
+                    ->icon('heroicon-m-arrow-down-tray')
+                    ->openUrlInNewTab()
+                    ->deselectRecordsAfterCompletion()
+                    ->action(function (Collection $records) {
+                        return response()->streamDownload(function () use ($records) {
+                            echo Pdf::loadHTML(
+                                Blade::render('pdf', ['records' => $records])
+                            )->stream();
+                        }, 'calendar.pdf');
+                    }),
                 ]),
             ])
             ->filtersLayout(Tables\Enums\FiltersLayout::AboveContent);

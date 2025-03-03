@@ -68,19 +68,16 @@ class EventResource extends Resource
                         TextInput::make('in_charge')->label('Responsible Person')->required(),
 
                         Select::make('term_id')
-                        ->label('Term')
-                        ->options(Term::latest()->take(3)->pluck('name', 'id'))
-                        ->searchable()
-                        ->live()
-                        ->required(),
+                            ->label('Term')
+                            ->options(Term::latest()->take(3)->pluck('name', 'id')->toArray())
+                            ->searchable()
+                            ->live()
+                            ->required(),
 
-                        // Week Selection - Filters Weeks Based on Selected Term
                         Select::make('event_week')
                             ->label('Event Week')
                             ->options(fn (callable $get) =>
-                                $get('term_id')
-                                    ? Week::where('term_id', $get('term_id'))->pluck('name', 'id')
-                                    : []
+                                Week::where('term_id', $get('term_id'))->pluck('name', 'id')->toArray()
                             )
                             ->reactive()
                             ->required(),
@@ -165,7 +162,7 @@ class EventResource extends Resource
                     ])
                     ->placeholder('Filter by Branch'),
                 SelectFilter::make('term_id')
-                    ->options(\App\Models\Term::orderBy('created_at', 'desc')->take(3)->pluck('name', 'id')->toArray()) // Fetch last 3 inserted terms
+                    ->options(Term::latest()->take(3)->pluck('name', 'id')->toArray())
                     ->placeholder('Filter by Term'),
 
                 SelectFilter::make('classes.name')
@@ -185,16 +182,17 @@ class EventResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('Export')
-                    ->icon('heroicon-m-arrow-down-tray')
-                    ->openUrlInNewTab()
-                    ->deselectRecordsAfterCompletion()
-                    ->action(function (Collection $events) {
-                        return response()->streamDownload(function () use ($events) {
-                            echo Pdf::loadHTML(
-                                Blade::render('pdf', ['events' => $events])
-                            )->stream();
-                        }, 'calendar.pdf');
-                    }),
+                        ->icon('heroicon-m-arrow-down-tray')
+                        ->openUrlInNewTab()
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $events) {
+                            return response()->streamDownload(function () use ($events) {
+                                echo Pdf::loadHTML(
+                                    Blade::render('pdf', ['events' => $events])
+                                )->setPaper('a4', 'landscape') // A4 landscape mode
+                                ->stream();
+                            }, 'calendar.pdf');
+                        }),
                 ]),
             ])
             ->filtersLayout(Tables\Enums\FiltersLayout::AboveContent);

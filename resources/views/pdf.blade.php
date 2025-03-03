@@ -43,7 +43,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($records as $index => $event)
+            @foreach ($events as $index => $event)
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $event->term->name ?? 'N/A' }}</td>
